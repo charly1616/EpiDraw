@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="LogoEpiDraw.svg">
+    <title>Epidraw</title>
+    <style>
+        :root {
+            --azul-oscuro: #1a3a52;
+            --azul-medio: #2c5282;
+            --azul-claro: #e0f2fe;
+            --background: #f8fafc;
+            --accent: #0ea5e9;
+            --accent-light: #cffafe;
+        }
+
+        #slider1 {
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--azul-oscuro);
+            max-width: 80px;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            cursor: pointer;
+        }
+
+
+        #slider1::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--azul-oscuro), var(--accent));
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #slider1::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: -4px;
+            box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);
+        }
+
+        #slider1::-webkit-slider-thumb:active {
+            transform: scale(1.3);
+            box-shadow: 0 0 12px rgba(14, 165, 233, 0.6);
+        }
+
+        body {
+            background-color: var(--background);
+            font-family: "Roboto", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 100;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("BackgroundSvg.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .canvas-container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            margin-top: 0;
+            gap: 20px;
+        }
+
+        .canvas-wrapper {
+            box-shadow: 0 4px 16px rgba(26, 58, 82, 0.12);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            flex-shrink: 2;
+            height: 85vh;
+            overflow: hidden;
+            background: white;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 0 0 8px 8px;
+            cursor: crosshair;
+            max-width: 100%;
+        }
+
+
+        i {
+            align-self: flex-start;
+            font-weight: 100;
+            color: var(--azul-claro);
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .canvas-title i:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .canvas-title {
+            padding: 14px 20px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+            text-align: center;
+            z-index: 1;
+            background: linear-gradient(135deg, #3b62ae 0%, #504592 100%);
+            border-bottom: 2px solid var(--accent);
+        }
+        
+
+        h3, h5 {
+            color: var(--azul-claro);
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+
+        h5 {
+            font-size: 0.9rem;
+            color: #90a6cb;
+        }
+
+        /* Barra de Menú */
+        .menu-bar {
+            background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul-medio) 100%);
+            border-top: 2px solid var(--accent);
+            padding: 20px 60px 15px 60px ;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+            min-height: 30px !important;
+        }
+
+        .control-group {
+            flex-shrink: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-family: inherit;
+            font-weight: 100;
+        }
+
+        button, input {
+            flex-shrink: 1;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            font-family: inherit;
+            font-weight: 100;
+            outline: none;
+        }
+
+        button {
+            background-color: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        button:hover {
+            background-color: rgba(14, 165, 233, 0.3);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        button:active { 
+            transform: scale(0.95); 
+            background-color: rgba(14, 165, 233, 0.4);
+        }
+
+        input[type="text"] { 
+            width: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: white;
+            border-radius: 6px;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input[type="number"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: white;
+            width: 70px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        input[type="number"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input[type="color"] {
+            height: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .double-border{
+            border: #fff 8px solid;
+        }
+
+        input[type="color"]:hover {
+            transform: scale(1.1);
+        }
+
+        #text2 {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border: 4px solid #2c5282;
+            border-radius: 50%;
+            cursor: pointer;
+            overflow: hidden;
+            background: none;
+            box-shadow: 0 0 0 2px white;
+        }
+
+        #text2::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        #text2::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        #text2::-moz-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        input[type="range"] { 
+            cursor: pointer;
+        }
+
+        .menu-bar > div:first-child {
+            transition: transform 0.3s;
+        }
+
+        .menu-bar > div:first-child:hover {
+            transform: scale(1.15);
+        }
+
+        .logo-container {
+            position: absolute;
+            left: 15px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container img {
+            transition: transform 0.3s;
+        }
+
+        .logo-container:hover img {
+            transform: scale(1.15);
+        }
+
+        @media (max-width: 1024px) {
+            .menu-bar {
+                padding: 15px 20px 15px 70px;
+                gap: 25px;
+            }
+            
+            input[type="number"] {
+                width: 60px;
+            }
+            
+            #slider1 {
+                max-width: 60px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .canvas-container {
+                flex-direction: column;
+            }
+
+            .canvas-wrapper {
+                width: 100%;
+                max-height: 40vh;
+                flex-shrink: 1;
+            }
+            
+            .menu-bar {
+                padding: 12px 15px 12px 70px;
+                gap: 12px;
+            }
+            
+            .control-group {
+                gap: 8px;
+            }
+            
+            button {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+                white-space: nowrap;
+            }
+            
+            input[type="number"], input[type="text"] {
+                padding: 5px 8px;
+                font-size: 0.85rem;
+            }
+            
+            input[type="number"] {
+                width: 50px;
+            }
+            
+            #slider1 {
+                max-width: 45px;
+            }
+
+            label {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 512px) {
+            .menu-bar {
+                padding: 10px 15px 10px 70px;
+                gap: 4px;
+            }
+            
+            
+            
+            .control-group {
+                gap: 4px;
+            }
+            
+            button {
+                padding: 5px 8px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            }
+            
+            input[type="number"] {
+                width: 45px;
+                padding: 2px 4px;
+                font-size: 0.8rem;
+            }
+            
+            #slider1 {
+                max-width: 40px;
+            }
+
+            label {
+                font-size: 0.8rem;
+            }
+
+            #text1 {
+                width: 30px;
+            }
+            #text2 {
+                width: 18px;
+                height: 18px;
+                border: 2px solid #2c5282;
+                box-shadow: 0 0 0 1.5px white;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="canvas-container">
+        <div class="canvas-wrapper">
+            <div class="canvas-title">
+                <div><i class="fa-solid fa-paintbrush"></i></div>
+                
+                <h3>Dibuja Aquí</h3>
+            </div>
+            <canvas id="canvasIzquierdo" width="800" height="800"></canvas>
+        </div>
+        <div class="canvas-wrapper">
+            <div class="canvas-title">
+                <div><i class="fa-solid fa-compass-drafting"></i></div>
+                <h3>Resultado</h3>
+                <div id="contador" style="display: none; flex-direction: row;">
+                    <h5>°°°   </h5>
+                    <br>
+                    <h5 id="cont-number">0</h5>
+                    <br>
+                    <h5>   °°°</h5>
+                </div>
+            </div>
+            <canvas id="canvasDerecho" width="800" height="800"></canvas>
+        </div>
+        
+    </div>
+
+    <div class="menu-bar">
+        <div class="logo-container">
+            <img src="./CharlyOctopusDark.svg" alt="CharlyOctopusLogo" width="30" height="30">
+        </div>
+
+        <div class="control-group">
+            <button id="btn1">Cargar</button>
+            <button id="btn2">Guardar</button>
+        </div>
+
+        <div class="control-group">
+            <label>Grosor:</label>
+            <input type="range" id="slider1" min="0.5" max="12" step="0.1" value="2">
+        </div>
+
+        <div class="control-group">
+            <input type="number" min="0" max="100" id="text1" value="100" placeholder="25%">
+            <input class="double-border" type="color" id="text2" value="#000000">
+            
+        </div>
+
+        
+    </div>
+
+    <script>
+        // --- VARIABLES ANCLADAS ---
+        const config = {
+            btn1Presionado: false,
+            btn2Presionado: false,
+            valorSlider: 5,
+            textoA: 100,
+            textoB: "100",
+            lineColor: "#0e0e0e"
+        };
+        const estadoDibujo = {
+            puntos: []
+        };
+
+
+        // Selección de elementos
+        const canvasDer = document.getElementById('canvasIzquierdo');
+        const ctxDer = canvasDer.getContext('2d');
+        const canvasIzq = document.getElementById('canvasDerecho');
+        const ctxIzq = canvasIzq.getContext('2d');
+
+        const inputSlider = document.getElementById('slider1');
+        const inputText1 = document.getElementById('text1');
+        const inputText2 = document.getElementById('text2');
+
+        // --- LÓGICA DE DIBUJO (Canvas Derecho) ---
+        let dibujando = false;
+
+        function obtenerPosicion(e) {
+            const rect = canvasDer.getBoundingClientRect();
+            
+            const xRelativo = e.clientX - rect.left;
+            const yRelativo = e.clientY - rect.top;
+
+            return {
+                x: xRelativo * (canvasDer.width / rect.width),
+                y: yRelativo * (canvasDer.height / rect.height)
+            };
+        }
+
+        const FourierTool = {
+            analizar: function(puntos) {
+                const N = puntos.length;
+                let coeficientes = [];
+
+                for (let k = 0; k < N; k++) {
+                    let re = 0;
+                    let im = 0;
+                    for (let n = 0; n < N; n++) {
+                        const phi = (2 * Math.PI * k * n) / N;
+                        re += puntos[n].x * Math.cos(phi) + puntos[n].y * Math.sin(phi);
+                        im += -puntos[n].x * Math.sin(phi) + puntos[n].y * Math.cos(phi);
+                    }
+                    re /= N;
+                    im /= N;
+
+                    coeficientes.push({
+                        re, 
+                        im, 
+                        frecuencia: k, 
+                        amplitud: Math.sqrt(re * re + im * im), 
+                        fase: Math.atan2(im, re)
+                    });
+                }
+                return coeficientes.sort((a, b) => b.amplitud - a.amplitud);
+            },
+
+            reconstruir: function(coefs, t) {
+                let x = 0;
+                let y = 0;
+                for (let i = 0; i < coefs.length; i++) {
+                    const { frecuencia, amplitud, fase } = coefs[i];
+                    const angulo = frecuencia * t + fase;
+                    x += amplitud * Math.cos(angulo);
+                    y += amplitud * Math.sin(angulo);
+                }
+                return { x, y };
+            }
+        };
+        
+
+        let fourierCoefs = [];
+        let tiempo = 0;
+        let caminoReconstruido = [];
+        let animando = false;
+
+        function iniciarProcesamiento(puntos) {
+            if (puntos.length < 2) return;
+            
+            fourierCoefs = FourierTool.analizar(puntos);
+            
+            tiempo = 0;
+            caminoReconstruido = [];
+            animando = true;
+        }
+
+        function loopAnimacion() {
+            if (!animando) {
+                requestAnimationFrame(loopAnimacion);
+                return;
+            }
+
+
+            ctxIzq.clearRect(0, 0, canvasIzq.width, canvasIzq.height);
+
+
+            let x = 0;
+            let y = 0;
+
+
+            for (let i = 0; i < (fourierCoefs.length)*(config.textoA/100.0); i++) {
+                let prevX = x;
+                let prevY = y;
+                
+                const { frecuencia, amplitud, fase } = fourierCoefs[i];
+                const angulo = frecuencia * tiempo + fase;
+                
+                x += amplitud * Math.cos(angulo);
+                y += amplitud * Math.sin(angulo);
+
+
+                ctxIzq.beginPath();
+                ctxIzq.strokeStyle = "rgba(52, 152, 219, 0.1)"; // Azul muy suave
+                ctxIzq.lineWidth = 1;
+                if (i !== 0) ctxIzq.arc(prevX, prevY, amplitud, 0, Math.PI * 2);
+                ctxIzq.stroke();
+
+
+                ctxIzq.beginPath();
+                ctxIzq.strokeStyle = "rgba(52, 152, 219, 0.6)"; // Azul muy suave
+                ctxIzq.lineWidth = 2.5;
+                ctxIzq.moveTo(prevX, prevY);
+                if (i !== 0) ctxIzq.lineTo(x, y);
+                ctxIzq.stroke();
+            }
+
+
+            caminoReconstruido.push({ x, y });
+
+
+            ctxIzq.beginPath();
+            ctxIzq.strokeStyle = config.lineColor;
+            ctxIzq.lineWidth = config.valorSlider;
+            ctxIzq.lineJoin = "round";
+            for (let i = 0; i < caminoReconstruido.length; i++) {
+                ctxIzq.lineTo(caminoReconstruido[i].x, caminoReconstruido[i].y);
+            }
+            ctxIzq.stroke();
+
+
+            const dt = (2 * Math.PI) / fourierCoefs.length;
+            tiempo += dt;
+
+
+            if (tiempo > Math.PI * 2) {
+                tiempo = 0;
+                caminoReconstruido = [];
+            }
+
+            requestAnimationFrame(loopAnimacion);
+        }
+
+
+        loopAnimacion();
+
+
+
+        canvasDer.addEventListener('mousedown', (e) => {
+            startDrawingPoints(e);
+        });
+
+
+        function startDrawingPoints(e) {
+            ctxDer.clearRect(0, 0, canvasDer.width, canvasDer.height);
+            estadoDibujo.puntos = [];
+            animando = false;
+            
+            dibujando = true;
+            const pos = obtenerPosicion(e);
+            ctxDer.beginPath();
+            ctxIzq.lineJoin = "round";
+            ctxDer.lineWidth = config.valorSlider;
+            ctxDer.strokeStyle = config.lineColor;
+            ctxDer.lineTo(pos.x, pos.y);
+            estadoDibujo.puntos.push(pos);
+        }
+
+
+        canvasDer.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Previene scroll por defecto
+            startDrawingPoints(e.touches[0]);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!dibujando) return;
+            drawNextPoint(e);
+        });
+
+        function drawNextPoint(e) {
+            const pos = obtenerPosicion(e);
+            ctxDer.lineTo(pos.x, pos.y);
+            estadoDibujo.puntos.push(pos);
+            ctxDer.stroke();
+        }
+
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Previene scroll por defecto
+            if (!dibujando) return;
+            drawNextPoint(e.touches[0]);
+        });
+
+        window.addEventListener('mouseup', () => {
+            dibujando = false;
+            iniciarProcesamiento(estadoDibujo.puntos);
+            actualizarContador();
+        });
+
+        window.addEventListener('touchend', () => {
+            dibujando = false;
+            iniciarProcesamiento(estadoDibujo.puntos);
+            actualizarContador();
+        });
+
+        // --- VINCULACIÓN DE CONTROLES ---
+        document.getElementById('btn1').onclick = () => {
+            cargarDibujo();
+        };
+
+        document.getElementById('btn2').onclick = () => {
+            guardarDibujo();
+        };
+
+        function guardarDibujo() {
+            const datosAGuardar = {
+                puntos: estadoDibujo.puntos,
+                fourierCoefs: fourierCoefs,
+                config: config
+            };
+
+            const datosJSON = JSON.stringify(datosAGuardar, null, 2);
+            const blob = new Blob([datosJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const enlace = document.createElement('a');
+            enlace.href = url;
+            enlace.download = 'dibujo-fourier.json';
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            URL.revokeObjectURL(url);
+        }
+
+        function cargarDibujo() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const archivo = e.target.files[0];
+                if (archivo) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const datosCargados = JSON.parse(event.target.result);
+
+                            estadoDibujo.puntos = datosCargados.puntos || [];
+                            fourierCoefs = datosCargados.fourierCoefs || [];
+
+                            if (datosCargados.config) {
+                                Object.assign(config, datosCargados.config);
+                                inputSlider.value = config.valorSlider;
+                                inputText1.value = config.textoA;
+                                inputText2.value = config.textoB;
+                                inputText2.style.backgroundColor = config.textoB;
+                            }
+
+                            ctxDer.clearRect(0, 0, canvasDer.width, canvasDer.height);
+                            if (estadoDibujo.puntos.length > 0) {
+                                ctxDer.beginPath();
+                                ctxDer.lineWidth = config.valorSlider;
+                                ctxDer.strokeStyle = config.lineColor;
+                                ctxDer.lineJoin = "round";
+
+                                estadoDibujo.puntos.forEach((punto, index) => {
+                                    if (index === 0) {
+                                        ctxDer.moveTo(punto.x, punto.y);
+                                    } else {
+                                        ctxDer.lineTo(punto.x, punto.y);
+                                    }
+                                });
+                                ctxDer.stroke();
+
+                                // Reiniciar animación con los coeficientes cargados
+                                if (fourierCoefs.length > 0) {
+                                    tiempo = 0;
+                                    caminoReconstruido = [];
+                                    animando = true;
+                                    actualizarContador();
+                                }
+                            }
+
+                        } catch (error) {
+                            alert('Error al cargar el archivo. Asegúrate de que sea un archivo JSON válido.');
+                            console.error('Error parsing JSON:', error);
+                        }
+                    };
+                    reader.readAsText(archivo);
+                }
+            };
+            input.click();
+        }
+
+        inputSlider.oninput = (e) => {
+            config.valorSlider = e.target.value;
+        };
+
+        inputText1.onchange = (e) => {
+            config.textoA = parseFloat(e.target.value) || 100.0;
+            actualizarContador();
+        };
+
+        function actualizarContador(){
+            let amountToShow = Math.floor(fourierCoefs.length * (config.textoA/100.0));
+            if (amountToShow < 1){
+                document.getElementById('contador').style.display = "none";
+            } else {
+                document.getElementById('contador').style.display = "flex";
+                document.getElementById('cont-number').textContent = amountToShow;
+            }
+        }
+
+        inputText2.onchange = (e) => {
+            config.textoB = e.target.value;
+            inputText2.style.backgroundColor = config.textoB;
+            config.lineColor = config.textoB;
+        };
+
+    </script>
+</body>
+</html>
